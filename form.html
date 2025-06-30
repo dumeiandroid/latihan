@@ -65,22 +65,32 @@
             const message = document.getElementById('message').value;
             
             try {
+                // Debug: Check configuration
+                console.log('Account ID:', ACCOUNT_ID);
+                console.log('Database ID:', DATABASE_ID);
+                console.log('API Token length:', API_TOKEN.length);
+                
+                const url = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/d1/database/${DATABASE_ID}/query`;
+                console.log('Request URL:', url);
+                
                 // Kirim data ke Cloudflare D1 dengan Bearer token
-                const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/d1/database/${DATABASE_ID}/query`, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${API_TOKEN}`, // Menggunakan Bearer token
+                        'Authorization': `Bearer ${API_TOKEN}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        sql: "INSERT INTO contacts (name, email, message) VALUES (?, ?, ?)",
-                        params: [name, email, message]
+                        sql: "SELECT 1 as test", // Test query sederhana dulu
+                        params: []
                     })
                 });
 
-                const data = await response.json();
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
                 
-                console.log('Response:', data); // Debug log
+                const data = await response.json();
+                console.log('Response data:', data);
                 
                 if (response.ok && data.success) {
                     // Success
