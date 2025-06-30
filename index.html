@@ -18,10 +18,20 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            padding: 20px;
         }
 
-        .container {
+        .main-container {
+            display: flex;
+            gap: 40px;
+            max-width: 1200px;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        .welcome-section {
+            flex: 1;
             text-align: center;
             color: white;
             padding: 40px;
@@ -31,6 +41,17 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
             animation: fadeIn 1.5s ease-out;
+        }
+
+        .contact-section {
+            flex: 1;
+            padding: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1.5s ease-out 0.3s both;
         }
 
         h1 {
@@ -43,10 +64,11 @@
             animation: glow 2s ease-in-out infinite alternate;
         }
 
-        p {
+        .welcome-section p {
             font-size: 1.2em;
             margin-bottom: 30px;
             opacity: 0.9;
+            color: white;
         }
 
         .btn {
@@ -59,11 +81,78 @@
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+            cursor: pointer;
         }
 
         .btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+        }
+
+        .contact-section h2 {
+            color: #333;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .floating-shapes {
@@ -105,6 +194,45 @@
             animation-delay: -1s;
         }
 
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            .welcome-section,
+            .contact-section {
+                padding: 25px;
+            }
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -142,10 +270,108 @@
         <div class="shape"></div>
     </div>
     
-    <div class="container">
-        <h1>Selamat Datang</h1>
-        <p>Kami senang Anda berkunjung ke website kami. Nikmati pengalaman yang luar biasa!</p>
-        <a href="#" class="btn">Mulai Jelajahi</a>
+    <div class="main-container">
+        <div class="welcome-section">
+            <h1>Selamat Datang</h1>
+            <p>Kami senang Anda berkunjung ke website kami. Nikmati pengalaman yang luar biasa!</p>
+            <a href="#contact" class="btn" onclick="scrollToContact()">Hubungi Kami</a>
+        </div>
+
+        <div class="contact-section" id="contact">
+            <h2>💬 Hubungi Kami</h2>
+            
+            <div id="alert" class="alert hidden"></div>
+            
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="name">Nama Lengkap</label>
+                    <input type="text" id="name" name="name" required placeholder="Masukkan nama lengkap Anda">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="nama@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Pesan</label>
+                    <textarea id="message" name="message" required placeholder="Tulis pesan Anda di sini..."></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Kirim Pesan
+                </button>
+            </form>
+        </div>
     </div>
+
+    <script>
+        function scrollToContact() {
+            document.getElementById('contact').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alert');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Mengirim...';
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                message: document.getElementById('message').value
+            };
+            
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('✅ Pesan berhasil dikirim! Terima kasih sudah menghubungi kami.', 'success');
+                    document.getElementById('contactForm').reset();
+                } else {
+                    showAlert('❌ Gagal mengirim pesan: ' + (result.error || 'Terjadi kesalahan'), 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ Terjadi kesalahan jaringan. Silakan coba lagi.', 'error');
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+
+        // Add some interaction to the welcome button
+        document.querySelector('.welcome-section .btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            scrollToContact();
+        });
+    </script>
 </body>
 </html>
