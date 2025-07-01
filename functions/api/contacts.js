@@ -16,6 +16,9 @@ export async function onRequest(context) {
     return new Response(null, { headers: corsHeaders });
   }
   
+  // Debug logging
+  console.log(`API ${method} request to /api/contacts`);
+  
   try {
     switch (method) {
       case 'GET':
@@ -23,10 +26,17 @@ export async function onRequest(context) {
       case 'POST':
         return await createContact(request, DB, corsHeaders);
       default:
-        return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: `Method ${method} not allowed` }), { 
+          status: 405, 
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
     }
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('API Error:', error);
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      stack: error.stack 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
@@ -35,7 +45,10 @@ export async function onRequest(context) {
 
 // GET all contacts
 async function getContacts(DB, corsHeaders) {
+  console.log('Getting all contacts...');
   const { results } = await DB.prepare("SELECT * FROM contacts ORDER BY created_at DESC").all();
+  console.log(`Found ${results.length} contacts`);
+  
   return new Response(JSON.stringify(results), {
     headers: { 'Content-Type': 'application/json', ...corsHeaders }
   });
@@ -43,16 +56,43 @@ async function getContacts(DB, corsHeaders) {
 
 // POST create contact
 async function createContact(request, DB, corsHeaders) {
-  const { name, email, message } = await request.json();
+  console.log('Creating new contact...');
   
-  const result = await DB.prepare(
-    "INSERT INTO contacts (name, email, message) VALUES (?, ?, ?)"
-  ).bind(name, email, message).run();
+  let requestData;
+  try {
+    requestData = await request.json();
+    console.log('Request data:', requestData);
+  } catch (error) {
+    throw new Error('Invalid JSON data');
+  }
   
-  return new Response(JSON.stringify({ 
-    success: true, 
-    id: result.meta.last_row_id 
-  }), {
-    headers: { 'Content-Type': 'application/json', ...corsHeaders }
-  });
+  const { name, email, message } = requestData;
+  
+  // Validation
+  if (!name || !email || !message) {
+    throw new Error('Name, email, and message are required');
+  }
+  
+  if (!email.includes('@')) {
+    throw new Error('Invalid email format');
+  }
+  
+  try {
+    const result = await DB.prepare(
+      "INSERT INTO contacts (name, email, message) VALUES (?, ?, ?)"
+    ).bind(name.trim(), email.trim(), message.trim()).run();
+    
+    console.log('Insert result:', result);
+    
+    return new Response(JSON.stringify({ 
+      success: true, 
+      id: result.meta.last_row_id,
+      message: 'Contact created successfully'
+    }), {
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
+  } catch (dbError) {
+    console.error('Database error:', dbError);
+    throw new Error('Failed to save contact to database');
+  }
 }
