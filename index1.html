@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Contact Manager</title>
+    <title>Contact Manager - Debug Version</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -9,7 +9,17 @@
 </head>
 <body>
 <div class="container mt-4">
-    <h2 class="mb-4">📞 Contact Manager</h2>
+    <h2 class="mb-4">📞 Contact Manager - Debug Version</h2>
+    
+    <!-- Debug Info -->
+    <div class="card mb-4 border-info">
+        <div class="card-header bg-info text-white">
+            <h6 class="mb-0">🐛 Debug Information</h6>
+        </div>
+        <div class="card-body">
+            <div id="debugInfo" class="small text-muted">Ready for debugging...</div>
+        </div>
+    </div>
     
     <!-- Add/Edit Form -->
     <div class="card mb-4">
@@ -23,30 +33,21 @@
                     <div class="col-md-6">
                         <label for="name" class="form-label">Full Name *</label>
                         <input type="text" class="form-control" id="name" placeholder="Enter full name" required>
-                        <div class="form-text">Enter the contact's full name</div>
                     </div>
                     <div class="col-md-6">
                         <label for="email" class="form-label">Email Address *</label>
                         <input type="email" class="form-control" id="email" placeholder="Enter email address" required>
-                        <div class="form-text">Enter a valid email address</div>
                     </div>
                     <div class="col-12">
                         <label for="message" class="form-label">Message *</label>
                         <textarea class="form-control" id="message" rows="3" placeholder="Enter message or note" required></textarea>
-                        <div class="form-text">Add any additional information or notes</div>
                     </div>
                 </div>
                 <hr>
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary" id="saveBtn">
-                        <i class="bi bi-check-circle"></i> 💾 Save Contact
-                    </button>
-                    <button type="button" class="btn btn-secondary" id="cancelBtn" style="display:none">
-                        <i class="bi bi-x-circle"></i> ❌ Cancel
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary" onclick="$('#contactForm')[0].reset()">
-                        <i class="bi bi-arrow-clockwise"></i> 🔄 Clear Form
-                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn">💾 Save Contact</button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn" style="display:none">❌ Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">🔄 Clear Form</button>
                 </div>
             </form>
         </div>
@@ -90,6 +91,9 @@
             </div>
             <div class="modal-body">
                 Are you sure you want to delete <strong id="deleteName"></strong>?
+                <div class="mt-2 small text-muted">
+                    Contact ID: <span id="deleteId"></span>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -117,10 +121,23 @@
 
 <script>
 let editingId = null;
-let contactsData = []; // Store contacts data to avoid string escaping issues
+let contactsData = [];
+
+// Debug logging function
+function debugLog(message, data = null) {
+    const timestamp = new Date().toLocaleTimeString();
+    const logMessage = `[${timestamp}] ${message}`;
+    console.log(logMessage, data || '');
+    
+    const debugDiv = document.getElementById('debugInfo');
+    if (debugDiv) {
+        debugDiv.innerHTML = `${logMessage}${data ? ': ' + JSON.stringify(data, null, 2) : ''}<br>` + debugDiv.innerHTML;
+    }
+}
 
 // Toast functions
 function showToast(message, type = 'success') {
+    debugLog(`Showing ${type} toast`, message);
     const toastId = type === 'success' ? '#successToast' : '#errorToast';
     const messageId = type === 'success' ? '#successMessage' : '#errorMessage';
     
@@ -128,58 +145,72 @@ function showToast(message, type = 'success') {
     $(toastId).toast('show');
 }
 
-// Escape HTML to prevent XSS
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
 // Load contacts on page load
-$(document).ready(() => loadContacts());
+$(document).ready(() => {
+    debugLog('Document ready, loading contacts...');
+    loadContacts();
+});
 
 // Load contacts function
 function loadContacts() {
+    debugLog('Loading contacts...');
     $('#contactsTable').html('<tr><td colspan="6" class="text-center">Loading...</td></tr>');
     
-    $.get('/api/contacts')
-        .done(data => {
-            contactsData = data; // Store data globally
-            let html = '';
-            if (data.length === 0) {
-                html = '<tr><td colspan="6" class="text-center text-muted">No contacts found</td></tr>';
-            } else {
-                data.forEach((contact, index) => {
-                    const createdDate = contact.created_at ? new Date(contact.created_at).toLocaleDateString() : 'N/A';
-                    html += `
-                        <tr>
-                            <td>${escapeHtml(contact.id.toString())}</td>
-                            <td>${escapeHtml(contact.name)}</td>
-                            <td>${escapeHtml(contact.email)}</td>
-                            <td title="${escapeHtml(contact.message)}">${escapeHtml(contact.message.length > 50 ? contact.message.substring(0, 50) + '...' : contact.message)}</td>
-                            <td>${createdDate}</td>
-                            <td>
-                                <button class="btn btn-sm btn-warning me-1" onclick="editContact(${index})" title="Edit">✏️</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteContact(${index})" title="Delete">🗑️</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-            $('#contactsTable').html(html);
-        })
-        .fail((xhr, status, error) => {
-            console.error('Load contacts error:', xhr.responseText, status, error);
+    $.ajax({
+        url: '/api/contacts',
+        method: 'GET',
+        success: function(data) {
+            debugLog('Contacts loaded successfully', data);
+            contactsData = data;
+            renderContactsTable(data);
+        },
+        error: function(xhr, status, error) {
+            debugLog('Error loading contacts', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
             $('#contactsTable').html('<tr><td colspan="6" class="text-center text-danger">Error loading contacts</td></tr>');
-            showToast('❌ Error loading contacts', 'error');
+            showToast('❌ Error loading contacts: ' + (xhr.responseText || error), 'error');
+        }
+    });
+}
+
+// Render contacts table
+function renderContactsTable(data) {
+    debugLog('Rendering contacts table', { count: data.length });
+    
+    let html = '';
+    if (data.length === 0) {
+        html = '<tr><td colspan="6" class="text-center text-muted">No contacts found</td></tr>';
+    } else {
+        data.forEach((contact, index) => {
+            const createdDate = contact.created_at ? new Date(contact.created_at).toLocaleDateString() : 'N/A';
+            const shortMessage = contact.message.length > 30 ? contact.message.substring(0, 30) + '...' : contact.message;
+            
+            html += `
+                <tr>
+                    <td>${contact.id}</td>
+                    <td>${contact.name}</td>
+                    <td>${contact.email}</td>
+                    <td title="${contact.message}">${shortMessage}</td>
+                    <td>${createdDate}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-1" onclick="editContact(${contact.id})" title="Edit">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteContact(${contact.id}, '${contact.name}')" title="Delete">🗑️</button>
+                    </td>
+                </tr>
+            `;
         });
+    }
+    $('#contactsTable').html(html);
 }
 
 // Save contact (Create/Update)
 $('#contactForm').submit(function(e) {
     e.preventDefault();
     
-    // Show loading state
     const $saveBtn = $('#saveBtn');
     const originalText = $saveBtn.text();
     $saveBtn.prop('disabled', true).text('💾 Saving...');
@@ -190,6 +221,8 @@ $('#contactForm').submit(function(e) {
         message: $('#message').val().trim()
     };
     
+    debugLog('Form submission', { editingId, data });
+    
     // Validation
     if (!data.name || !data.email || !data.message) {
         showToast('❌ Please fill all required fields', 'error');
@@ -197,32 +230,30 @@ $('#contactForm').submit(function(e) {
         return;
     }
     
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.email)) {
-        showToast('❌ Please enter a valid email address', 'error');
-        $saveBtn.prop('disabled', false).text(originalText);
-        return;
-    }
-    
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId ? `/api/contacts/${editingId}` : '/api/contacts';
     
-    console.log('Sending request:', { method, url, data });
+    debugLog('Making AJAX request', { method, url, data });
     
     $.ajax({
         url: url,
         method: method,
         contentType: 'application/json',
         data: JSON.stringify(data),
-        success: (response) => {
-            console.log('Success response:', response);
+        success: function(response) {
+            debugLog('Save success', response);
             resetForm();
             loadContacts();
             showToast(editingId ? '✅ Contact updated successfully!' : '✅ Contact added successfully!', 'success');
         },
-        error: (xhr, status, error) => {
-            console.error('Error details:', xhr.responseText, status, error);
+        error: function(xhr, status, error) {
+            debugLog('Save error', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            
             let errorMsg = 'Error saving contact';
             try {
                 const errorData = JSON.parse(xhr.responseText);
@@ -232,20 +263,26 @@ $('#contactForm').submit(function(e) {
             }
             showToast('❌ ' + errorMsg, 'error');
         },
-        complete: () => {
+        complete: function() {
             $saveBtn.prop('disabled', false).text(originalText);
         }
     });
 });
 
-// Edit contact - using index instead of inline string parameters
-function editContact(index) {
-    if (!contactsData[index]) {
+// Edit contact
+function editContact(contactId) {
+    debugLog('Edit contact clicked', { contactId });
+    
+    // Find contact in data
+    const contact = contactsData.find(c => c.id == contactId);
+    if (!contact) {
+        debugLog('Contact not found for edit', { contactId, availableContacts: contactsData });
         showToast('❌ Contact not found', 'error');
         return;
     }
     
-    const contact = contactsData[index];
+    debugLog('Found contact for edit', contact);
+    
     editingId = contact.id;
     $('#contactId').val(contact.id);
     $('#name').val(contact.name);
@@ -266,6 +303,7 @@ $('#cancelBtn').click(() => resetForm());
 
 // Reset form
 function resetForm() {
+    debugLog('Resetting form');
     editingId = null;
     $('#contactForm')[0].reset();
     $('#contactId').val('');
@@ -274,16 +312,18 @@ function resetForm() {
     $('#cancelBtn').hide();
 }
 
-// Delete contact - using index instead of inline string parameters
-function deleteContact(index) {
-    if (!contactsData[index]) {
-        showToast('❌ Contact not found', 'error');
-        return;
-    }
+// Clear form
+function clearForm() {
+    $('#contactForm')[0].reset();
+}
+
+// Delete contact
+function deleteContact(contactId, contactName) {
+    debugLog('Delete contact clicked', { contactId, contactName });
     
-    const contact = contactsData[index];
-    $('#deleteName').text(contact.name);
-    $('#confirmDelete').data('id', contact.id);
+    $('#deleteName').text(contactName);
+    $('#deleteId').text(contactId);
+    $('#confirmDelete').data('id', contactId);
     $('#deleteModal').modal('show');
 }
 
@@ -293,19 +333,27 @@ $('#confirmDelete').click(function() {
     const $btn = $(this);
     const originalText = $btn.text();
     
+    debugLog('Confirming delete', { id });
+    
     $btn.prop('disabled', true).text('Deleting...');
     
     $.ajax({
         url: `/api/contacts/${id}`,
         method: 'DELETE',
-        success: (response) => {
-            console.log('Delete success:', response);
+        success: function(response) {
+            debugLog('Delete success', response);
             $('#deleteModal').modal('hide');
             loadContacts();
             showToast('✅ Contact deleted successfully!', 'success');
         },
-        error: (xhr, status, error) => {
-            console.error('Delete error:', xhr.responseText, status, error);
+        error: function(xhr, status, error) {
+            debugLog('Delete error', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            
             let errorMsg = 'Error deleting contact';
             try {
                 const errorData = JSON.parse(xhr.responseText);
@@ -315,17 +363,74 @@ $('#confirmDelete').click(function() {
             }
             showToast('❌ ' + errorMsg, 'error');
         },
-        complete: () => {
+        complete: function() {
             $btn.prop('disabled', false).text(originalText);
         }
     });
 });
 
-// Add some debugging
+// Global error handler
 window.addEventListener('error', function(e) {
+    debugLog('JavaScript Error', { message: e.message, filename: e.filename, lineno: e.lineno });
     console.error('JavaScript Error:', e.error);
-    showToast('❌ JavaScript Error: ' + e.message, 'error');
 });
+
+// Test functions for debugging
+window.testEdit = function(id) {
+    debugLog('Testing edit function', { id });
+    editContact(id);
+};
+
+window.testDelete = function(id, name) {
+    debugLog('Testing delete function', { id, name });
+    deleteContact(id, name);
+};
+
+// API test functions
+window.testAPI = {
+    testUpdate: function(id) {
+        debugLog('Testing UPDATE API directly');
+        $.ajax({
+            url: `/api/contacts/${id}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                name: 'Test Update',
+                email: 'test@update.com',
+                message: 'Test update message'
+            }),
+            success: function(response) {
+                debugLog('Direct UPDATE test success', response);
+            },
+            error: function(xhr, status, error) {
+                debugLog('Direct UPDATE test error', {
+                    status: xhr.status,
+                    responseText: xhr.responseText,
+                    error: error
+                });
+            }
+        });
+    },
+    testDelete: function(id) {
+        debugLog('Testing DELETE API directly');
+        $.ajax({
+            url: `/api/contacts/${id}`,
+            method: 'DELETE',
+            success: function(response) {
+                debugLog('Direct DELETE test success', response);
+            },
+            error: function(xhr, status, error) {
+                debugLog('Direct DELETE test error', {
+                    status: xhr.status,
+                    responseText: xhr.responseText,
+                    error: error
+                });
+            }
+        });
+    }
+};
+
+debugLog('Contact Manager initialized');
 </script>
 </body>
 </html>
