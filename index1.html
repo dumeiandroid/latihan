@@ -99,8 +99,33 @@
     </div>
 </div>
 
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="successMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+    <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="errorMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
 <script>
 let editingId = null;
+
+// Toast functions
+function showToast(message, type = 'success') {
+    const toastId = type === 'success' ? '#successToast' : '#errorToast';
+    const messageId = type === 'success' ? '#successMessage' : '#errorMessage';
+    
+    $(messageId).text(message);
+    $(toastId).toast('show');
+}
 
 // Load contacts on page load
 $(document).ready(() => loadContacts());
@@ -174,18 +199,18 @@ $('#contactForm').submit(function(e) {
             console.log('Success response:', response);
             resetForm();
             loadContacts();
-            alert(editingId ? '✅ Contact updated successfully!' : '✅ Contact added successfully!');
+            showToast(editingId ? '✅ Contact updated successfully!' : '✅ Contact added successfully!', 'success');
         },
         error: (xhr, status, error) => {
             console.error('Error details:', xhr.responseText, status, error);
-            let errorMsg = '❌ Error saving contact';
+            let errorMsg = 'Error saving contact';
             try {
                 const errorData = JSON.parse(xhr.responseText);
-                errorMsg += ': ' + errorData.error;
+                errorMsg = errorData.error || errorMsg;
             } catch(e) {
-                errorMsg += ': ' + error;
+                errorMsg = error || errorMsg;
             }
-            alert(errorMsg);
+            showToast('❌ ' + errorMsg, 'error');
         },
         complete: () => {
             $saveBtn.prop('disabled', false).text(originalText);
@@ -235,9 +260,9 @@ $('#confirmDelete').click(function() {
         success: () => {
             $('#deleteModal').modal('hide');
             loadContacts();
-            alert('✅ Contact deleted!');
+            showToast('✅ Contact deleted successfully!', 'success');
         },
-        error: () => alert('❌ Error deleting contact')
+        error: () => showToast('❌ Error deleting contact', 'error')
     });
 });
 </script>
