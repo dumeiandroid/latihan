@@ -13,25 +13,41 @@
     
     <!-- Add/Edit Form -->
     <div class="card mb-4">
-        <div class="card-header">
-            <h5 id="formTitle">➕ Add New Contact</h5>
+        <div class="card-header bg-primary text-white">
+            <h5 id="formTitle" class="mb-0">➕ Add New Contact</h5>
         </div>
         <div class="card-body">
             <form id="contactForm">
                 <input type="hidden" id="contactId">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <input type="text" class="form-control" id="name" placeholder="Name" required>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" id="name" placeholder="Enter full name" required>
+                        <div class="form-text">Enter the contact's full name</div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <input type="email" class="form-control" id="email" placeholder="Email" required>
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" id="email" placeholder="Enter email address" required>
+                        <div class="form-text">Enter a valid email address</div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <input type="text" class="form-control" id="message" placeholder="Message" required>
+                    <div class="col-12">
+                        <label for="message" class="form-label">Message *</label>
+                        <textarea class="form-control" id="message" rows="3" placeholder="Enter message or note" required></textarea>
+                        <div class="form-text">Add any additional information or notes</div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" id="saveBtn">💾 Save Contact</button>
-                <button type="button" class="btn btn-secondary" id="cancelBtn" style="display:none">❌ Cancel</button>
+                <hr>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" id="saveBtn">
+                        <i class="bi bi-check-circle"></i> 💾 Save Contact
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn" style="display:none">
+                        <i class="bi bi-x-circle"></i> ❌ Cancel
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="$('#contactForm')[0].reset()">
+                        <i class="bi bi-arrow-clockwise"></i> 🔄 Clear Form
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -126,26 +142,54 @@ function loadContacts() {
 $('#contactForm').submit(function(e) {
     e.preventDefault();
     
+    // Show loading state
+    const $saveBtn = $('#saveBtn');
+    const originalText = $saveBtn.text();
+    $saveBtn.prop('disabled', true).text('💾 Saving...');
+    
     const data = {
-        name: $('#name').val(),
-        email: $('#email').val(),
-        message: $('#message').val()
+        name: $('#name').val().trim(),
+        email: $('#email').val().trim(),
+        message: $('#message').val().trim()
     };
+    
+    // Validation
+    if (!data.name || !data.email || !data.message) {
+        alert('❌ Please fill all fields');
+        $saveBtn.prop('disabled', false).text(originalText);
+        return;
+    }
     
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId ? `/api/contacts/${editingId}` : '/api/contacts';
+    
+    console.log('Sending request:', { method, url, data });
     
     $.ajax({
         url: url,
         method: method,
         contentType: 'application/json',
         data: JSON.stringify(data),
-        success: () => {
+        success: (response) => {
+            console.log('Success response:', response);
             resetForm();
             loadContacts();
-            alert(editingId ? '✅ Contact updated!' : '✅ Contact added!');
+            alert(editingId ? '✅ Contact updated successfully!' : '✅ Contact added successfully!');
         },
-        error: () => alert('❌ Error saving contact')
+        error: (xhr, status, error) => {
+            console.error('Error details:', xhr.responseText, status, error);
+            let errorMsg = '❌ Error saving contact';
+            try {
+                const errorData = JSON.parse(xhr.responseText);
+                errorMsg += ': ' + errorData.error;
+            } catch(e) {
+                errorMsg += ': ' + error;
+            }
+            alert(errorMsg);
+        },
+        complete: () => {
+            $saveBtn.prop('disabled', false).text(originalText);
+        }
     });
 });
 
