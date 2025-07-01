@@ -122,44 +122,58 @@
             }
 
             try {
-                console.log('Updating contact:', { id, name, email, message });
+                showResult('updateResult', 'Updating...', 'success');
                 
                 const response = await fetch(`${API_BASE}/${id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({ name, email, message })
                 });
                 
-                console.log('Update response status:', response.status);
-                console.log('Update response headers:', [...response.headers.entries()]);
-                
                 const responseText = await response.text();
-                console.log('Update response text:', responseText);
                 
-                if (!responseText) {
-                    showResult('updateResult', `Error: Empty response (Status: ${response.status})`, 'error');
+                // Debug info
+                console.log('UPDATE DEBUG:', {
+                    url: `${API_BASE}/${id}`,
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    responseText: responseText
+                });
+                
+                if (!response.ok) {
+                    showResult('updateResult', `HTTP ${response.status}: ${response.statusText}\nResponse: ${responseText}`, 'error');
+                    return;
+                }
+                
+                if (!responseText || responseText.trim() === '') {
+                    showResult('updateResult', `Success but empty response (Status: ${response.status})`, 'success');
                     return;
                 }
                 
                 let result;
                 try {
                     result = JSON.parse(responseText);
-                } catch (parseError) {
-                    showResult('updateResult', `Error: Invalid JSON response - ${responseText}`, 'error');
-                    return;
-                }
-                
-                showResult('updateResult', JSON.stringify(result, null, 2), response.ok ? 'success' : 'error');
-                
-                if (response.ok) {
+                    showResult('updateResult', JSON.stringify(result, null, 2), 'success');
+                    
+                    // Clear form on success
                     document.getElementById('updateId').value = '';
                     document.getElementById('updateName').value = '';
                     document.getElementById('updateEmail').value = '';
                     document.getElementById('updateMessage').value = '';
+                    
+                    // Refresh contacts
+                    setTimeout(getContacts, 500);
+                } catch (parseError) {
+                    showResult('updateResult', `Parse Error: ${parseError.message}\nRaw Response: ${responseText}`, 'error');
                 }
+                
             } catch (error) {
                 console.error('Update error:', error);
-                showResult('updateResult', 'Network Error: ' + error.message, 'error');
+                showResult('updateResult', `Network Error: ${error.message}`, 'error');
             }
         }
 
@@ -171,42 +185,58 @@
                 return;
             }
 
+            if (!confirm(`Are you sure you want to delete contact ID ${id}?`)) {
+                return;
+            }
+
             try {
-                console.log('Deleting contact ID:', id);
+                showResult('deleteResult', 'Deleting...', 'success');
                 
                 const response = await fetch(`${API_BASE}/${id}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: { 
+                        'Accept': 'application/json'
+                    }
                 });
                 
-                console.log('Delete response status:', response.status);
-                console.log('Delete response headers:', [...response.headers.entries()]);
-                
                 const responseText = await response.text();
-                console.log('Delete response text:', responseText);
                 
-                if (!responseText) {
-                    showResult('deleteResult', `Error: Empty response (Status: ${response.status})`, 'error');
+                // Debug info
+                console.log('DELETE DEBUG:', {
+                    url: `${API_BASE}/${id}`,
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    responseText: responseText
+                });
+                
+                if (!response.ok) {
+                    showResult('deleteResult', `HTTP ${response.status}: ${response.statusText}\nResponse: ${responseText}`, 'error');
+                    return;
+                }
+                
+                if (!responseText || responseText.trim() === '') {
+                    showResult('deleteResult', `Success but empty response (Status: ${response.status})`, 'success');
+                    document.getElementById('deleteId').value = '';
+                    setTimeout(getContacts, 500);
                     return;
                 }
                 
                 let result;
                 try {
                     result = JSON.parse(responseText);
-                } catch (parseError) {
-                    showResult('deleteResult', `Error: Invalid JSON response - ${responseText}`, 'error');
-                    return;
-                }
-                
-                showResult('deleteResult', JSON.stringify(result, null, 2), response.ok ? 'success' : 'error');
-                
-                if (response.ok) {
+                    showResult('deleteResult', JSON.stringify(result, null, 2), 'success');
+                    
+                    // Clear form and refresh
                     document.getElementById('deleteId').value = '';
-                    // Refresh contacts list
-                    getContacts();
+                    setTimeout(getContacts, 500);
+                } catch (parseError) {
+                    showResult('deleteResult', `Parse Error: ${parseError.message}\nRaw Response: ${responseText}`, 'error');
                 }
+                
             } catch (error) {
                 console.error('Delete error:', error);
-                showResult('deleteResult', 'Network Error: ' + error.message, 'error');
+                showResult('deleteResult', `Network Error: ${error.message}`, 'error');
             }
         }
 
