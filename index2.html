@@ -122,16 +122,44 @@
             }
 
             try {
+                console.log('Updating contact:', { id, name, email, message });
+                
                 const response = await fetch(`${API_BASE}/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, message })
                 });
                 
-                const result = await response.json();
+                console.log('Update response status:', response.status);
+                console.log('Update response headers:', [...response.headers.entries()]);
+                
+                const responseText = await response.text();
+                console.log('Update response text:', responseText);
+                
+                if (!responseText) {
+                    showResult('updateResult', `Error: Empty response (Status: ${response.status})`, 'error');
+                    return;
+                }
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    showResult('updateResult', `Error: Invalid JSON response - ${responseText}`, 'error');
+                    return;
+                }
+                
                 showResult('updateResult', JSON.stringify(result, null, 2), response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    document.getElementById('updateId').value = '';
+                    document.getElementById('updateName').value = '';
+                    document.getElementById('updateEmail').value = '';
+                    document.getElementById('updateMessage').value = '';
+                }
             } catch (error) {
-                showResult('updateResult', 'Error: ' + error.message, 'error');
+                console.error('Update error:', error);
+                showResult('updateResult', 'Network Error: ' + error.message, 'error');
             }
         }
 
@@ -144,14 +172,41 @@
             }
 
             try {
+                console.log('Deleting contact ID:', id);
+                
                 const response = await fetch(`${API_BASE}/${id}`, {
                     method: 'DELETE'
                 });
                 
-                const result = await response.json();
+                console.log('Delete response status:', response.status);
+                console.log('Delete response headers:', [...response.headers.entries()]);
+                
+                const responseText = await response.text();
+                console.log('Delete response text:', responseText);
+                
+                if (!responseText) {
+                    showResult('deleteResult', `Error: Empty response (Status: ${response.status})`, 'error');
+                    return;
+                }
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    showResult('deleteResult', `Error: Invalid JSON response - ${responseText}`, 'error');
+                    return;
+                }
+                
                 showResult('deleteResult', JSON.stringify(result, null, 2), response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    document.getElementById('deleteId').value = '';
+                    // Refresh contacts list
+                    getContacts();
+                }
             } catch (error) {
-                showResult('deleteResult', 'Error: ' + error.message, 'error');
+                console.error('Delete error:', error);
+                showResult('deleteResult', 'Network Error: ' + error.message, 'error');
             }
         }
 
