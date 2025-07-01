@@ -1,7 +1,7 @@
 // functions/api/contacts.js - Complete CRUD API
 export async function onRequest(context) {
   const { request, env } = context;
-  const { DB } = env;
+  const { DB_LATIHAN1 } = env;
   const method = request.method;
   
   // CORS headers
@@ -22,9 +22,9 @@ export async function onRequest(context) {
   try {
     switch (method) {
       case 'GET':
-        return await getContacts(DB, corsHeaders);
+        return await getContacts(DB_LATIHAN1, corsHeaders);
       case 'POST':
-        return await createContact(request, DB, corsHeaders);
+        return await createContact(request, DB_LATIHAN1, corsHeaders);
       default:
         return new Response(JSON.stringify({ error: `Method ${method} not allowed` }), { 
           status: 405, 
@@ -44,9 +44,9 @@ export async function onRequest(context) {
 }
 
 // GET all contacts
-async function getContacts(DB, corsHeaders) {
+async function getContacts(DB_LATIHAN1, corsHeaders) {
   console.log('Getting all contacts...');
-  const { results } = await DB.prepare("SELECT * FROM contacts ORDER BY created_at DESC").all();
+  const { results } = await DB_LATIHAN1.prepare("SELECT * FROM contacts ORDER BY created_at DESC").all();
   console.log(`Found ${results.length} contacts`);
   
   return new Response(JSON.stringify(results), {
@@ -55,7 +55,7 @@ async function getContacts(DB, corsHeaders) {
 }
 
 // POST create contact
-async function createContact(request, DB, corsHeaders) {
+async function createContact(request, DB_LATIHAN1, corsHeaders) {
   console.log('Creating new contact...');
   
   let requestData;
@@ -78,7 +78,7 @@ async function createContact(request, DB, corsHeaders) {
   }
   
   try {
-    const result = await DB.prepare(
+    const result = await DB_LATIHAN1.prepare(
       "INSERT INTO contacts (name, email, message) VALUES (?, ?, ?)"
     ).bind(name.trim(), email.trim(), message.trim()).run();
     
