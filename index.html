@@ -2,9 +2,18 @@
 <html>
 <head>
     <title>Contacts Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .error { color: red; padding: 10px; background: #ffe6e6; margin: 10px 0; }
+        .loading { color: blue; padding: 10px; }
+    </style>
 </head>
 <body>
     <h1>Contacts Data</h1>
+    <div id="status" class="loading">Loading contacts...</div>
     <table border="1">
         <thead>
             <tr>
@@ -22,30 +31,65 @@
 
     <script>
         async function loadContacts() {
+            const statusDiv = document.getElementById('status');
+            const tbody = document.getElementById('contactsTable');
+            
             try {
-                const response = await fetch('/api/contacts');
-                const contacts = await response.json();
+                statusDiv.textContent = 'Fetching data from API...';
+                console.log('Fetching from:', '/api/contacts');
                 
-                const tbody = document.getElementById('contactsTable');
+                const response = await fetch('/api/contacts');
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const contacts = await response.json();
+                console.log('Contacts data:', contacts);
+                
+                if (!Array.isArray(contacts)) {
+                    throw new Error('Expected array but got: ' + typeof contacts);
+                }
+                
                 tbody.innerHTML = '';
+                statusDiv.style.display = 'none';
+                
+                if (contacts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">No contacts found</td></tr>';
+                    return;
+                }
                 
                 contacts.forEach(contact => {
                     tbody.innerHTML += `
                         <tr>
-                            <td>${contact.id}</td>
-                            <td>${contact.name}</td>
-                            <td>${contact.email}</td>
-                            <td>${contact.message}</td>
-                            <td>${contact.created_at}</td>
+                            <td>${contact.id || 'N/A'}</td>
+                            <td>${contact.name || 'N/A'}</td>
+                            <td>${contact.email || 'N/A'}</td>
+                            <td>${contact.message || 'N/A'}</td>
+                            <td>${contact.created_at || 'N/A'}</td>
                         </tr>
                     `;
                 });
+                
             } catch (error) {
-                document.getElementById('contactsTable').innerHTML = 
-                    '<tr><td colspan="5">Error loading data</td></tr>';
+                console.error('Error loading contacts:', error);
+                statusDiv.className = 'error';
+                statusDiv.innerHTML = `
+                    <strong>Error loading contacts:</strong><br>
+                    ${error.message}<br>
+                    <small>Check browser console for more details</small>
+                `;
+                tbody.innerHTML = '<tr><td colspan="5">Error loading data - see message above</td></tr>';
             }
         }
         
+        // Load contacts when page loads
+        document.addEventListener('DOMContentLoaded', loadContacts);
+        
+        // Also try to load immediately
         loadContacts();
     </script>
 </body>
