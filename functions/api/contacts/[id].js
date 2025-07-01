@@ -22,8 +22,8 @@ export async function onRequest(context) {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Check if we have DB
-  if (!env.DB) {
+  // Check if we have DB_LATIHAN1
+  if (!env.DB_LATIHAN1) {
     console.error('Database not available');
     return new Response(JSON.stringify({ error: 'Database not available' }), {
       status: 500,
@@ -42,9 +42,9 @@ export async function onRequest(context) {
 
   try {
     if (method === 'PUT') {
-      return await handleUpdate(request, env.DB, id, corsHeaders);
+      return await handleUpdate(request, env.DB_LATIHAN1, id, corsHeaders);
     } else if (method === 'DELETE') {
-      return await handleDelete(env.DB, id, corsHeaders);
+      return await handleDelete(env.DB_LATIHAN1, id, corsHeaders);
     } else {
       console.log('Method not allowed:', method);
       return new Response(JSON.stringify({ error: `Method ${method} not allowed` }), {
@@ -64,7 +64,7 @@ export async function onRequest(context) {
   }
 }
 
-async function handleUpdate(request, DB, id, corsHeaders) {
+async function handleUpdate(request, DB_LATIHAN1, id, corsHeaders) {
   console.log(`--- UPDATE contact ${id} ---`);
   
   try {
@@ -92,7 +92,7 @@ async function handleUpdate(request, DB, id, corsHeaders) {
     // Check if contact exists first
     console.log('Checking if contact exists...');
     const existsQuery = "SELECT id FROM contacts WHERE id = ?";
-    const existsResult = await DB.prepare(existsQuery).bind(id).first();
+    const existsResult = await DB_LATIHAN1.prepare(existsQuery).bind(id).first();
     console.log('Exists check result:', existsResult);
 
     if (!existsResult) {
@@ -105,7 +105,7 @@ async function handleUpdate(request, DB, id, corsHeaders) {
     // Update contact
     console.log('Updating contact...');
     const updateQuery = "UPDATE contacts SET name = ?, email = ?, message = ? WHERE id = ?";
-    const updateResult = await DB.prepare(updateQuery).bind(name, email, message, id).run();
+    const updateResult = await DB_LATIHAN1.prepare(updateQuery).bind(name, email, message, id).run();
     console.log('Update result:', updateResult);
 
     return new Response(JSON.stringify({ 
@@ -129,14 +129,14 @@ async function handleUpdate(request, DB, id, corsHeaders) {
   }
 }
 
-async function handleDelete(DB, id, corsHeaders) {
+async function handleDelete(DB_LATIHAN1, id, corsHeaders) {
   console.log(`--- DELETE contact ${id} ---`);
   
   try {
     // Check if contact exists first
     console.log('Checking if contact exists...');
     const existsQuery = "SELECT id, name FROM contacts WHERE id = ?";
-    const existsResult = await DB.prepare(existsQuery).bind(id).first();
+    const existsResult = await DB_LATIHAN1.prepare(existsQuery).bind(id).first();
     console.log('Exists check result:', existsResult);
 
     if (!existsResult) {
@@ -149,7 +149,7 @@ async function handleDelete(DB, id, corsHeaders) {
     // Delete contact
     console.log('Deleting contact...');
     const deleteQuery = "DELETE FROM contacts WHERE id = ?";
-    const deleteResult = await DB.prepare(deleteQuery).bind(id).run();
+    const deleteResult = await DB_LATIHAN1.prepare(deleteQuery).bind(id).run();
     console.log('Delete result:', deleteResult);
 
     return new Response(JSON.stringify({ 
