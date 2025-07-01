@@ -1,9 +1,13 @@
-// functions/api/contacts/[id].js - Update & Delete specific contact
+// functions/api/contacts/[id].js - Simplified version for debugging
 export async function onRequest(context) {
   const { request, env, params } = context;
-  const { DB } = env;
   const method = request.method;
   const id = params.id;
+
+  console.log(`=== API [${method}] /api/contacts/${id} ===`);
+  console.log('Request URL:', request.url);
+  console.log('Params:', params);
+  console.log('Method:', method);
 
   // CORS headers
   const corsHeaders = {
@@ -14,37 +18,45 @@ export async function onRequest(context) {
 
   // Handle preflight
   if (method === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Debug logging
-  console.log(`API ${method} request to /api/contacts/${id}`);
+  // Check if we have DB
+  if (!env.DB) {
+    console.error('Database not available');
+    return new Response(JSON.stringify({ error: 'Database not available' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
+  }
 
   // Validate ID
-  if (!id || isNaN(parseInt(id))) {
-    return new Response(JSON.stringify({ error: 'Invalid contact ID' }), {
+  if (!id) {
+    console.error('No ID provided');
+    return new Response(JSON.stringify({ error: 'No ID provided' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
   }
 
   try {
-    switch (method) {
-      case 'PUT':
-        return await updateContact(request, DB, id, corsHeaders);
-      case 'DELETE':
-        return await deleteContact(DB, id, corsHeaders);
-      default:
-        return new Response(JSON.stringify({ error: `Method ${method} not allowed` }), { 
-          status: 405, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        });
+    if (method === 'PUT') {
+      return await handleUpdate(request, env.DB, id, corsHeaders);
+    } else if (method === 'DELETE') {
+      return await handleDelete(env.DB, id, corsHeaders);
+    } else {
+      console.log('Method not allowed:', method);
+      return new Response(JSON.stringify({ error: `Method ${method} not allowed` }), {
+        status: 405,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
     }
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('Unhandled error:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
-      stack: error.stack 
+      error: `Server error: ${error.message}`,
+      stack: error.stack
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', ...corsHeaders }
@@ -52,93 +64,112 @@ export async function onRequest(context) {
   }
 }
 
-// PUT update contact
-async function updateContact(request, DB, id, corsHeaders) {
-  console.log(`Updating contact ${id}...`);
-
-  let requestData;
+async function handleUpdate(request, DB, id, corsHeaders) {
+  console.log(`--- UPDATE contact ${id} ---`);
+  
   try {
-    requestData = await request.json();
-    console.log('Update request data:', requestData);
-  } catch (error) {
-    throw new Error('Invalid JSON data');
-  }
-
-  const { name, email, message } = requestData;
-
-  // Validation
-  if (!name || !email || !message) {
-    throw new Error('Name, email, and message are required');
-  }
-
-  if (!email.includes('@')) {
-    throw new Error('Invalid email format');
-  }
-
-  try {
-    // First check if contact exists
-    const existingContact = await DB.prepare("SELECT id FROM contacts WHERE id = ?").bind(id).first();
+    // Get request body
+    const contentType = request.headers.get('content-type');
+    console.log('Content-Type:', contentType);
     
-    if (!existingContact) {
-      throw new Error('Contact not found');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Content-Type must be application/json');
     }
 
-    // Update the contact
-    const result = await DB.prepare(
-      "UPDATE contacts SET name = ?, email = ?, message = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
-    ).bind(name.trim(), email.trim(), message.trim(), id).run();
+    const body = await request.text();
+    console.log('Raw body:', body);
+    
+    const data = JSON.parse(body);
+    console.log('Parsed data:', data);
 
-    console.log('Update result:', result);
+    const { name, email, message } = data;
 
-    // Verify update was successful
-    if (result.changes === 0) {
-      throw new Error('No changes were made to the contact');
+    // Basic validation
+    if (!name || !email || !message) {
+      throw new Error('Missing required fields: name, email, message');
     }
+
+    // Check if contact exists first
+    console.log('Checking if contact exists...');
+    const existsQuery = "SELECT id FROM contacts WHERE id = ?";
+    const existsResult = await DB.prepare(existsQuery).bind(id).first();
+    console.log('Exists check result:', existsResult);
+
+    if (!existsResult) {
+      return new Response(JSON.stringify({ error: 'Contact not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
+    // Update contact
+    console.log('Updating contact...');
+    const updateQuery = "UPDATE contacts SET name = ?, email = ?, message = ? WHERE id = ?";
+    const updateResult = await DB.prepare(updateQuery).bind(name, email, message, id).run();
+    console.log('Update result:', updateResult);
 
     return new Response(JSON.stringify({ 
-      success: true, 
+      success: true,
       message: 'Contact updated successfully',
-      changes: result.changes
+      changes: updateResult.changes,
+      meta: updateResult.meta
     }), {
       headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
-  } catch (dbError) {
-    console.error('Database error:', dbError);
-    throw new Error(`Failed to update contact: ${dbError.message}`);
+
+  } catch (error) {
+    console.error('Update error:', error);
+    return new Response(JSON.stringify({ 
+      error: `Update failed: ${error.message}`,
+      stack: error.stack
+    }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
   }
 }
 
-// DELETE contact
-async function deleteContact(DB, id, corsHeaders) {
-  console.log(`Deleting contact ${id}...`);
-
+async function handleDelete(DB, id, corsHeaders) {
+  console.log(`--- DELETE contact ${id} ---`);
+  
   try {
-    // First check if contact exists
-    const existingContact = await DB.prepare("SELECT id, name FROM contacts WHERE id = ?").bind(id).first();
-    
-    if (!existingContact) {
-      throw new Error('Contact not found');
+    // Check if contact exists first
+    console.log('Checking if contact exists...');
+    const existsQuery = "SELECT id, name FROM contacts WHERE id = ?";
+    const existsResult = await DB.prepare(existsQuery).bind(id).first();
+    console.log('Exists check result:', existsResult);
+
+    if (!existsResult) {
+      return new Response(JSON.stringify({ error: 'Contact not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
     }
 
-    // Delete the contact
-    const result = await DB.prepare("DELETE FROM contacts WHERE id = ?").bind(id).run();
-    
-    console.log('Delete result:', result);
-
-    // Verify deletion was successful
-    if (result.changes === 0) {
-      throw new Error('Contact could not be deleted');
-    }
+    // Delete contact
+    console.log('Deleting contact...');
+    const deleteQuery = "DELETE FROM contacts WHERE id = ?";
+    const deleteResult = await DB.prepare(deleteQuery).bind(id).run();
+    console.log('Delete result:', deleteResult);
 
     return new Response(JSON.stringify({ 
-      success: true, 
+      success: true,
       message: 'Contact deleted successfully',
-      changes: result.changes
+      changes: deleteResult.changes,
+      meta: deleteResult.meta,
+      deletedContact: existsResult
     }), {
       headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
-  } catch (dbError) {
-    console.error('Database error:', dbError);
-    throw new Error(`Failed to delete contact: ${dbError.message}`);
+
+  } catch (error) {
+    console.error('Delete error:', error);
+    return new Response(JSON.stringify({ 
+      error: `Delete failed: ${error.message}`,
+      stack: error.stack
+    }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
   }
 }
