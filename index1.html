@@ -117,6 +117,7 @@
 
 <script>
 let editingId = null;
+let contactsData = []; // Store contacts data to avoid string escaping issues
 
 // Toast functions
 function showToast(message, type = 'success') {
@@ -125,6 +126,13 @@ function showToast(message, type = 'success') {
     
     $(messageId).text(message);
     $(toastId).toast('show');
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Load contacts on page load
@@ -136,21 +144,23 @@ function loadContacts() {
     
     $.get('/api/contacts')
         .done(data => {
+            contactsData = data; // Store data globally
             let html = '';
             if (data.length === 0) {
                 html = '<tr><td colspan="6" class="text-center text-muted">No contacts found</td></tr>';
             } else {
-                data.forEach(contact => {
+                data.forEach((contact, index) => {
+                    const createdDate = contact.created_at ? new Date(contact.created_at).toLocaleDateString() : 'N/A';
                     html += `
                         <tr>
-                            <td>${contact.id}</td>
-                            <td>${contact.name}</td>
-                            <td>${contact.email}</td>
-                            <td>${contact.message}</td>
-                            <td>${new Date(contact.created_at).toLocaleDateString()}</td>
+                            <td>${escapeHtml(contact.id.toString())}</td>
+                            <td>${escapeHtml(contact.name)}</td>
+                            <td>${escapeHtml(contact.email)}</td>
+                            <td title="${escapeHtml(contact.message)}">${escapeHtml(contact.message.length > 50 ? contact.message.substring(0, 50) + '...' : contact.message)}</td>
+                            <td>${createdDate}</td>
                             <td>
-                                <button class="btn btn-sm btn-warning" onclick="editContact(${contact.id}, '${contact.name}', '${contact.email}', '${contact.message}')">✏️</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteContact(${contact.id}, '${contact.name}')">🗑️</button>
+                                <button class="btn btn-sm btn-warning me-1" onclick="editContact(${index})" title="Edit">✏️</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteContact(${index})" title="Delete">🗑️</button>
                             </td>
                         </tr>
                     `;
@@ -158,8 +168,10 @@ function loadContacts() {
             }
             $('#contactsTable').html(html);
         })
-        .fail(() => {
+        .fail((xhr, status, error) => {
+            console.error('Load contacts error:', xhr.responseText, status, error);
             $('#contactsTable').html('<tr><td colspan="6" class="text-center text-danger">Error loading contacts</td></tr>');
+            showToast('❌ Error loading contacts', 'error');
         });
 }
 
@@ -180,7 +192,15 @@ $('#contactForm').submit(function(e) {
     
     // Validation
     if (!data.name || !data.email || !data.message) {
-        alert('❌ Please fill all fields');
+        showToast('❌ Please fill all required fields', 'error');
+        $saveBtn.prop('disabled', false).text(originalText);
+        return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email)) {
+        showToast('❌ Please enter a valid email address', 'error');
         $saveBtn.prop('disabled', false).text(originalText);
         return;
     }
@@ -208,7 +228,7 @@ $('#contactForm').submit(function(e) {
                 const errorData = JSON.parse(xhr.responseText);
                 errorMsg = errorData.error || errorMsg;
             } catch(e) {
-                errorMsg = error || errorMsg;
+                errorMsg = xhr.responseText || error || errorMsg;
             }
             showToast('❌ ' + errorMsg, 'error');
         },
@@ -218,16 +238,27 @@ $('#contactForm').submit(function(e) {
     });
 });
 
-// Edit contact
-function editContact(id, name, email, message) {
-    editingId = id;
-    $('#contactId').val(id);
-    $('#name').val(name);
-    $('#email').val(email);
-    $('#message').val(message);
+// Edit contact - using index instead of inline string parameters
+function editContact(index) {
+    if (!contactsData[index]) {
+        showToast('❌ Contact not found', 'error');
+        return;
+    }
+    
+    const contact = contactsData[index];
+    editingId = contact.id;
+    $('#contactId').val(contact.id);
+    $('#name').val(contact.name);
+    $('#email').val(contact.email);
+    $('#message').val(contact.message);
     $('#formTitle').text('✏️ Edit Contact');
     $('#saveBtn').text('💾 Update Contact');
     $('#cancelBtn').show();
+    
+    // Scroll to form
+    $('html, body').animate({
+        scrollTop: $('#contactForm').offset().top - 100
+    }, 300);
 }
 
 // Cancel edit
@@ -243,27 +274,57 @@ function resetForm() {
     $('#cancelBtn').hide();
 }
 
-// Delete contact
-function deleteContact(id, name) {
-    $('#deleteName').text(name);
-    $('#confirmDelete').data('id', id);
+// Delete contact - using index instead of inline string parameters
+function deleteContact(index) {
+    if (!contactsData[index]) {
+        showToast('❌ Contact not found', 'error');
+        return;
+    }
+    
+    const contact = contactsData[index];
+    $('#deleteName').text(contact.name);
+    $('#confirmDelete').data('id', contact.id);
     $('#deleteModal').modal('show');
 }
 
 // Confirm delete
 $('#confirmDelete').click(function() {
     const id = $(this).data('id');
+    const $btn = $(this);
+    const originalText = $btn.text();
+    
+    $btn.prop('disabled', true).text('Deleting...');
     
     $.ajax({
         url: `/api/contacts/${id}`,
         method: 'DELETE',
-        success: () => {
+        success: (response) => {
+            console.log('Delete success:', response);
             $('#deleteModal').modal('hide');
             loadContacts();
             showToast('✅ Contact deleted successfully!', 'success');
         },
-        error: () => showToast('❌ Error deleting contact', 'error')
+        error: (xhr, status, error) => {
+            console.error('Delete error:', xhr.responseText, status, error);
+            let errorMsg = 'Error deleting contact';
+            try {
+                const errorData = JSON.parse(xhr.responseText);
+                errorMsg = errorData.error || errorMsg;
+            } catch(e) {
+                errorMsg = xhr.responseText || error || errorMsg;
+            }
+            showToast('❌ ' + errorMsg, 'error');
+        },
+        complete: () => {
+            $btn.prop('disabled', false).text(originalText);
+        }
     });
+});
+
+// Add some debugging
+window.addEventListener('error', function(e) {
+    console.error('JavaScript Error:', e.error);
+    showToast('❌ JavaScript Error: ' + e.message, 'error');
 });
 </script>
 </body>
