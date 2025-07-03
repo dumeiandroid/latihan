@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meningkatkan Daya Saing Kerja Alumni</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 100px 0; }
+        .section { padding: 80px 0; }
+        .bg-light-custom { background: #f8f9fa; }
+        .card { border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .testimonial { background: #fff; border-left: 4px solid #667eea; padding: 20px; margin: 20px 0; }
+        .stats { background: #667eea; color: white; text-align: center; padding: 30px; margin: 10px; border-radius: 10px; }
+        .btn-primary { background: #667eea; border: none; padding: 12px 30px; font-weight: bold; }
+        .btn-primary:hover { background: #5a67d8; }
+        .logo-grid img { max-height: 60px; filter: grayscale(100%); opacity: 0.7; transition: all 0.3s; }
+        .logo-grid img:hover { filter: grayscale(0%); opacity: 1; }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero text-center">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 mb-4">Khawatir dengan Tingkat Employability Alumni Universitas Anda?</h1>
+                    <p class="lead mb-4">Program Komprehensif untuk Meningkatkan Daya Saing Kerja Alumni dan Reputasi Institusi</p>
+                    <button class="btn btn-primary btn-lg me-3" onclick="scrollToSection('solution')">
+                        <i class="fas fa-rocket"></i> Konsultasi Gratis
+                    </button>
+                    <button class="btn btn-outline-light btn-lg" onclick="scrollToSection('social-proof')">
+                        <i class="fas fa-chart-line"></i> Lihat Hasil
+                    </button>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=500&h=400&fit=crop" 
+                         alt="University Students" class="img-fluid rounded shadow">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="section bg-light-custom">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h2 class="mb-4">Tantangan Serius yang Dihadapi Perguruan Tinggi</h2>
+                    <div class="mb-4">
+                        <div class="d-flex mb-3">
+                            <i class="fas fa-exclamation-triangle text-danger me-3 mt-1"></i>
+                            <div>
+                                <strong>Tingkat Pengangguran Lulusan Tinggi:</strong> 8.5% fresh graduate masih menganggur setelah 6 bulan lulus
+                            </div>
+                        </div>
+                        <div class="d-flex mb-3">
+                            <i class="fas fa-gap text-warning me-3 mt-1"></i>
+                            <div>
+                                <strong>Skill Gap yang Melebar:</strong> 73% perusahaan mengeluh lulusan tidak memiliki soft skills yang dibutuhkan
+                            </div>
+                        </div>
+                        <div class="d-flex mb-3">
+                            <i class="fas fa-arrow-down text-danger me-3 mt-1"></i>
+                            <div>
+                                <strong>Ranking Universitas Menurun:</strong> Tingkat employability alumni menjadi parameter utama penilaian akreditasi
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Fakta Mengejutkan:</strong> World Economic Forum melaporkan bahwa 50% skill yang dibutuhkan di dunia kerja akan berubah dalam 5 tahun ke depan.
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&h=400&fit=crop" 
+                         alt="Business Meeting" class="img-fluid rounded">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="section" id="solution">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="mb-3">Solusi Terintegrasi untuk Meningkatkan Employability Alumni</h2>
+                <p class="lead">Career Readiness Enhancement Program</p>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100 text-center p-4">
+                        <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                        <h5>Soft Skills Development</h5>
+                        <p>Leadership, komunikasi, problem solving, teamwork</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100 text-center p-4">
+                        <i class="fas fa-laptop-code fa-3x text-primary mb-3"></i>
+                        <h5>Digital Literacy</h5>
+                        <p>Data analysis, AI tools, digital marketing basics</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100 text-center p-4">
+                        <i class="fas fa-industry fa-3x text-primary mb-3"></i>
+                        <h5>Industry Exposure</h5>
+                        <p>Magang terintegrasi, industry visit, guest lecturer</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100 text-center p-4">
+                        <i class="fas fa-user-tie fa-3x text-primary mb-3"></i>
+                        <h5>Career Coaching</h5>
+                        <p>Personal branding, resume writing, interview preparation</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100 text-center p-4">
+                        <i class="fas fa-lightbulb fa-3x text-primary mb-3"></i>
+                        <h5>Entrepreneurship</h5>
+                        <p>Business plan, startup fundamentals, innovation mindset</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100 text-center p-4">
+                        <i class="fas fa-certificate fa-3x text-primary mb-3"></i>
+                        <h5>Job Placement</h5>
+                        <p>Layanan penempatan kerja eksklusif dengan sertifikat</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="section bg-light-custom">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h2 class="mb-4">Transformasi yang Akan Dirasakan Universitas</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-danger">Sebelum Program:</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-times text-danger me-2"></i>Alumni kesulitan mendapat pekerjaan</li>
+                                <li><i class="fas fa-times text-danger me-2"></i>Employer complain tentang kualitas lulusan</li>
+                                <li><i class="fas fa-times text-danger me-2"></i>Ranking universitas stagnan</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-success">Sesudah Program:</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Tingkat employability alumni meningkat</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Employer satisfaction meningkat</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Ranking universitas membaik</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="testimonial">
+                        <p class="fst-italic">"Setelah mengimplementasikan program ini, tingkat employability alumni kami meningkat dari 60% menjadi 85% dalam 1 tahun."</p>
+                        <footer class="blockquote-footer">Prof. Dr. Bambang, <cite>Dekan FE Universitas Airlangga</cite></footer>
+                    </div>
+                    <div class="testimonial">
+                        <p class="fst-italic">"Program ini benar-benar game changer. Employer sekarang lebih percaya dengan kualitas lulusan kami."</p>
+                        <footer class="blockquote-footer">Dr. Siti Nurhaliza, <cite>Wakil Rektor Universitas Brawijaya</cite></footer>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Proposition -->
+    <section class="section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="mb-4">Investasi Strategis untuk Masa Depan Institusi</h2>
+                    <p class="lead mb-4">Satu-satunya program terintegrasi yang terbukti meningkatkan daya saing alumni melalui pendekatan holistik yang menggabungkan soft skills, digital literacy, dan industry exposure.</p>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stats">
+                                <h3>50+</h3>
+                                <p>Universitas Partner</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats">
+                                <h3>85%</h3>
+                                <p>Peningkatan Employability</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats">
+                                <h3>95%</h3>
+                                <p>Satisfaction Rate</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats">
+                                <h3>10K+</h3>
+                                <p>Alumni Terdampak</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof -->
+    <section class="section bg-light-custom" id="social-proof">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="mb-3">Dipercaya Puluhan Universitas Terkemuka</h2>
+                <p class="lead">Bergabunglah dengan komunitas universitas yang telah merasakan transformasi</p>
+            </div>
+            <div class="row logo-grid justify-content-center align-items-center">
+                <div class="col-md-2 col-4 text-center mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Universitas_Indonesia_logo.svg/200px-Universitas_Indonesia_logo.svg.png" alt="UI" class="img-fluid">
+                </div>
+                <div class="col-md-2 col-4 text-center mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Institut_Teknologi_Bandung_logo.svg/200px-Institut_Teknologi_Bandung_logo.svg.png" alt="ITB" class="img-fluid">
+                </div>
+                <div class="col-md-2 col-4 text-center mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Universitas_Gadjah_Mada_logo.svg/200px-Universitas_Gadjah_Mada_logo.svg.png" alt="UGM" class="img-fluid">
+                </div>
+                <div class="col-md-2 col-4 text-center mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Universitas_Airlangga_logo.svg/200px-Universitas_Airlangga_logo.svg.png" alt="UNAIR" class="img-fluid">
+                </div>
+                <div class="col-md-2 col-4 text-center mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Institut_Pertanian_Bogor_logo.svg/200px-Institut_Pertanian_Bogor_logo.svg.png" alt="IPB" class="img-fluid">
+                </div>
+                <div class="col-md-2 col-4 text-center mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Universitas_Brawijaya_logo.svg/200px-Universitas_Brawijaya_logo.svg.png" alt="UB" class="img-fluid">
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-lg-4">
+                    <div class="card text-center p-4">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" 
+                             class="rounded-circle mx-auto mb-3" width="100" height="100" alt="Expert">
+                        <h5>Dr. Rizki Pratama, M.B.A.</h5>
+                        <p class="text-muted">Direktur Program Career Development</p>
+                        <p class="small">15 tahun pengalaman di HR multinasional, Ex-HR Director Google Indonesia</p>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Paket Investasi:</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Starter:</strong> Rp 500 juta/tahun</li>
+                                <li><strong>Professional:</strong> Rp 1.2 miliar/tahun</li>
+                                <li><strong>Enterprise:</strong> Rp 2 miliar/tahun</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Bonus Eksklusif:</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Career Development Summit</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Benchmark Study</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Konsultasi Strategi</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="container text-center">
+            <h2 class="mb-4">Siap Meningkatkan Daya Saing Alumni Anda?</h2>
+            <p class="lead mb-4">Bergabunglah dengan 50+ universitas yang telah merasakan transformasi nyata</p>
+            <button class="btn btn-light btn-lg me-3" onclick="openModal()">
+                <i class="fas fa-phone"></i> Konsultasi Gratis Sekarang
+            </button>
+            <button class="btn btn-outline-light btn-lg">
+                <i class="fas fa-download"></i> Download Proposal
+            </button>
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div class="modal fade" id="consultationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Konsultasi Gratis</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Nama Lengkap</label>
+                            <input type="text" class="form-control" placeholder="Prof. Dr. Nama Anda">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Jabatan</label>
+                            <input type="text" class="form-control" placeholder="Dekan/Wakil Rektor/Dosen">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Universitas</label>
+                            <input type="text" class="form-control" placeholder="Nama Universitas">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" placeholder="email@universitas.ac.id">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nomor WhatsApp</label>
+                            <input type="tel" class="form-control" placeholder="081234567890">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary">Kirim Permintaan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script>
+        function scrollToSection(sectionId) {
+            $('html, body').animate({
+                scrollTop: $('#' + sectionId).offset().top - 70
+            }, 800);
+        }
+
+        function openModal() {
+            $('#consultationModal').modal('show');
+        }
+
+        // Smooth scrolling for all internal links
+        $('a[href^="#"]').on('click', function(event) {
+            var target = $(this.getAttribute('href'));
+            if( target.length ) {
+                event.preventDefault();
+                $('html, body').stop().animate({
+                    scrollTop: target.offset().top - 70
+                }, 800);
+            }
+        });
+
+        // Add animation on scroll
+        $(window).scroll(function() {
+            $('.card').each(function() {
+                var elementTop = $(this).offset().top;
+                var elementBottom = elementTop + $(this).outerHeight();
+                var viewportTop = $(window).scrollTop();
+                var viewportBottom = viewportTop + $(window).height();
+                
+                if (elementBottom > viewportTop && elementTop < viewportBottom) {
+                    $(this).addClass('animate__animated animate__fadeInUp');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
